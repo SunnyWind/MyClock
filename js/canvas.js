@@ -6,6 +6,8 @@ var CLOCK_MODE_WATERFALL = 1;
 var clockMode = CLOCK_MODE_NORMAL;
 var waterfallHeight = 0;
 var lovePicture;
+var picCount = 5; //0 < picCount < 10, and there should be that number of pictures in the img folder.
+// picture names all start with "pic0" and end with ".jpg".
 //var startDate = new Date();
 //startDate.setFullYear(2012);
 //startDate.setMonth(8);
@@ -30,11 +32,11 @@ Particle.prototype = {
         // Velocity
 		this.vx = 0.0;
 		this.vy = 0.0;
-        
+
         // Accelerate
         this.ax = 0.0;
         this.ay = 0.98
-        
+
         this.bounceable = false;
         this.bounce = false;
 	},
@@ -45,7 +47,7 @@ Particle.prototype = {
 		this.y += (this.vy + this.ay);
 
 		this.vx += this.ax;
-		
+
 
         if ( this.y <= window.innerHeight ) {
             this.vy += this.ay;
@@ -53,7 +55,7 @@ Particle.prototype = {
             this.alive = false;
         } else if (this.bounceable) {
             this.vy = (-this.vy) * random(0.3, 0.8);
-            
+
             this.bounce = true;
         } else {
             this.alive = false;
@@ -93,7 +95,7 @@ var clock = Sketch.create();
 clock.update = function() {
     clock.innerWidth = window.innerWidth;
     clock.innerHeight = window.innerHeight;
-    
+
     var i, particle;
 
     for ( i = particles.length - 1; i >= 0; i-- ) {
@@ -103,10 +105,10 @@ clock.update = function() {
         if ( particle.alive ) particle.move();
         else pool.push( particles.splice( i, 1 )[0] );
     }
-    
+
     if (clockMode == CLOCK_MODE_NORMAL) {
         spark();
-        
+
         if ( clockSecond == 0 ) {
             clockMode = CLOCK_MODE_WATERFALL;
         }
@@ -116,10 +118,10 @@ clock.update = function() {
             if (!lovePicture) {
                 lovePicture = new Image();
             }
-            
-            lovePicture.src = "img/pic0"+ parseInt(random(1, 6))+".png";
+
+            lovePicture.src = "img/pic0"+ parseInt(random(1, (picCount+1)))+".jpg";
         }
-        
+
         if ( waterfallHeight < window.innerHeight ) {
             waterfall(waterfallHeight);
             waterfallHeight += 0.53; // Addition result can't be integer
@@ -131,7 +133,7 @@ clock.update = function() {
                 smash();
             }, 10000);
         }
-            
+
     }
 }
 
@@ -139,7 +141,7 @@ clock.draw = function() {
     clock.globalCompositeOperation  = 'lighter';
 
     displayTime(clock);
-    
+
     // Draw balls
     for ( var i = particles.length - 1; i >= 0; i-- ) {
         particles[i].draw( clock );
@@ -158,15 +160,15 @@ clock.draw = function() {
             imgWidth = window.innerWidth;
             imgHeight = imgWidth * lovePicture.naturalHeight / lovePicture.naturalWidth;
         }
-        
+
         cutWidth = window.innerWidth * lovePicture.naturalWidth / imgWidth;
         cutHeight = waterfallHeight * lovePicture.naturalHeight / imgHeight;
-        
+
         clock.drawImage(lovePicture, 0, 0, cutWidth, cutHeight, 0, 0, window.innerWidth, waterfallHeight  );
     }
 }
 
- 
+
 clock.spawn = function( x, y ) {
 
 	if ( particles.length >= MAX_PARTICLES )
@@ -180,7 +182,7 @@ clock.spawn = function( x, y ) {
         particle.vy = random( -10.0, 0.0 );
         particle.bounceable = true;
     }
-	
+
 	particle.color = random( COLOURS );
 
 	particles.push( particle );
@@ -192,24 +194,28 @@ function displayTime(ctx) {
     clockHour = curDate.getHours();
     clockMinute = curDate.getMinutes();
     clockSecond = curDate.getSeconds();
-    
+
     var positionX = window.innerWidth/2 - 250;
-    var positionY = window.innerHeight/2 - 50;
-    
+    var positionY = window.innerHeight/2;
+
     ctx.font = "100px Verdana";
     ctx.fillStyle = "rgb(73, 57, 61)";
     ctx.fillText((clockHour>9?clockHour:"0"+clockHour)+":"+
                  (clockMinute>9?clockMinute:"0"+clockMinute)+":"+
                  (clockSecond>9?clockSecond:"0"+clockSecond), positionX, positionY);
-    
-    
+
+
         //Date
-    var tgthDays = (Date.UTC(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()) - 
+    var tgthDays = (Date.UTC(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()) -
                     Date.UTC(2012,8,23))/(1000*60*60*24);
     ctx.font = "40px Verdana";
     ctx.fillStyle = "rgb(73, 57, 61)";
     ctx.fillText("我们相爱的第" + tgthDays + "天", 20, 100);
-    
+
+		// Test
+		ctx.font = "20px Verdana";
+    ctx.fillStyle = "rgb(49, 43, 45)";
+    ctx.fillText("稍等一会儿有惊喜哦 ^——^", 20, window.innerHeight-50);
 }
 
 
@@ -222,10 +228,10 @@ function spark() {
     var hour = curDate.getHours();
     var minute = curDate.getMinutes();
     var second = curDate.getSeconds();
-    
+
     var positionX = window.innerWidth/2 - 250;
     var positionY = window.innerHeight/2 - 50;
-    
+
     var diffs = [];
     if( hour != clockHour ) {
         diffs.push(1);
@@ -233,33 +239,33 @@ function spark() {
             diffs.push(0);
         }
     }
-    
+
     if( minute != clockMinute ) {
         diffs.push(3);
         if ( minute%10 == 0 ) {
             diffs.push(2);
         }
     }
-    
+
     if( second != clockSecond ) {
         diffs.push(5);
         if ( second%10 == 0 ) {
             diffs.push(4);
         }
     }
-    
+
     for (var i = 0 ; i < diffs.length ; i++) {
-        
+
         var spawnPositionX = positionX + diffs[i]*85;
-        
+
         if (i>1)
             spawnPositionX += 80;
-        
+
         if (i>3)
             spawnPositionX += 80;
-        
+
         var ballNum = random(5, 15);
-        
+
         for (j=0; j < ballNum ; j++) {
             clock.spawn( spawnPositionX+random(10,40), positionY+random(-80,0) );
         }
@@ -275,10 +281,8 @@ function smash() {
 
 function waterfall(height) {
     var fallBallNum = window.innerWidth/500;
-    
+
     for (j=0; j < fallBallNum ; j++) {
         clock.spawn( random(0,window.innerWidth), height );
     }
 }
-
-
